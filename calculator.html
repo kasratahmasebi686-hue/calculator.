@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ماشین حساب مهندسی پیشرفته</title>
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+  />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/10.6.1/math.min.js"></script>
+  <style>
+    @import url("https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700&family=Orbitron:wght@400;700&display=swap");
+
+    :root {
+      --dark-bg: #1e1e2f;
+      --dark-calculator-bg: #2a2a3f;
+      --dark-text: #e0e0e0;
+      --dark-display-bg: #1a1a2b;
+      --dark-button-bg: #35354a;
+      --dark-button-hover: #4a4a60;
+      --dark-operator-bg: #6a6a8a;
+      --dark-equal-bg: #5c62ec;
+      --dark-equal-hover: #7b80ff;
+      --dark-clear-bg: #e74c3c;
+      --dark-back-bg: #3498db;
+      --dark-border: rgba(255, 255, 255, 0.1);
+
+      --light-bg: #eef1f5;
+      --light-calculator-bg: #f9f9f9;
+      --light-text: #333;
+      --light-display-bg: #f0f0f0;
+      --light-button-bg: #e0e0e0;
+      --light-button-hover: #d0d0d0;
+      --light-operator-bg: #aeb4d5;
+      --light-equal-bg: #636ee2;
+      --light-equal-hover: #7b80ff;
+      --light-clear-bg: #e74c3c;
+      --light-back-bg: #3498db;
+      --light-border: rgba(0, 0, 0, 0.1);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: "Vazirmatn", sans-serif;
+    }
+
+    body {
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      transition: background 0.5s, color 0.5s;
+      font-family: "Orbitron", sans-serif;
+    }
+
+    body.dark {
+      background: var(--dark-bg);
+      color: var(--dark-text);
+    }
+
+    body.light {
+      background: var(--light-bg);
+      color: var(--light-text);
+    }
+
+    .calculator-container {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: flex-start;
+      width: 100%;
+      max-width: 900px;
+      padding: 20px;
+    }
+
+    .calculator {
+      width: 380px;
+      background: var(--dark-calculator-bg);
+      border-radius: 25px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      padding: 25px;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      transition: background 0.5s;
+    }
+
+    body.light .calculator {
+      background: var(--light-calculator-bg);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    }
+
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .toggle-theme,
+    .history-clear {
+      cursor: pointer;
+      padding: 8px 15px;
+      border-radius: 15px;
+      font-size: 0.9rem;
+      transition: 0.3s;
+      background: var(--dark-button-bg);
+    }
+    .toggle-theme:hover,
+    .history-clear:hover {
+      transform: scale(1.05);
+    }
+    body.light .toggle-theme,
+    body.light .history-clear {
+      background: var(--light-button-bg);
+    }
+
+    .history {
+      height: 100px;
+      overflow-y: auto;
+      font-size: 0.8rem;
+      opacity: 0.7;
+      border-bottom: 1px solid var(--dark-border);
+      padding-bottom: 5px;
+    }
+    body.light .history {
+      border-color: var(--light-border);
+    }
+
+    .history-entry {
+      margin-bottom: 3px;
+      direction: ltr;
+      text-align: right;
+    }
+
+    .display {
+      height: 80px;
+      background: var(--dark-display-bg);
+      border-radius: 18px;
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      padding: 0 20px;
+      font-size: 2.5rem;
+      overflow-x: auto;
+      white-space: nowrap;
+      direction: ltr;
+      transition: background 0.5s;
+      font-family: "Orbitron", sans-serif;
+    }
+    body.light .display {
+      background: var(--light-display-bg);
+      color: var(--light-text);
+    }
+
+    .buttons {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 10px;
+    }
+
+    button {
+      background: var(--dark-button-bg);
+      border: none;
+      border-radius: 15px;
+      color: inherit;
+      font-size: 1.1rem;
+      padding: 18px;
+      cursor: pointer;
+      transition: 0.2s;
+      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
+    }
+
+    body.light button {
+      background: var(--light-button-bg);
+    }
+
+    button:hover {
+      background: var(--dark-button-hover);
+    }
+    body.light button:hover {
+      background: var(--light-button-hover);
+    }
+
+    button:active {
+      transform: scale(0.95);
+    }
+
+    .operator {
+      background: var(--dark-operator-bg);
+    }
+    body.light .operator {
+      background: var(--light-operator-bg);
+    }
+
+    .equal {
+      background: var(--dark-equal-bg);
+      grid-column: span 2;
+    }
+    body.light .equal {
+      background: var(--light-equal-bg);
+    }
+    .equal:hover {
+      background: var(--dark-equal-hover);
+    }
+    body.light .equal:hover {
+      background: var(--light-equal-hover);
+    }
+
+    .clear {
+      background: var(--dark-clear-bg);
+    }
+    .clear:hover {
+      background: #c0392b;
+    }
+    body.light .clear {
+      background: var(--light-clear-bg);
+    }
+
+    .back {
+      background: var(--dark-back-bg);
+    }
+    .back:hover {
+      background: #2980b9;
+    }
+    body.light .back {
+      background: var(--light-back-bg);
+    }
+    .history-section {
+      width: 380px;
+      background: var(--dark-calculator-bg);
+      border-radius: 25px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      padding: 25px;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      transition: background 0.5s;
+    }
+    body.light .history-section {
+      background: var(--light-calculator-bg);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    }
+    .history-full {
+      max-height: 400px;
+      overflow-y: auto;
+      padding-right: 10px;
+    }
+    .history-full::-webkit-scrollbar {
+      width: 8px;
+    }
+    .history-full::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 4px;
+    }
+    body.light .history-full::-webkit-scrollbar-thumb {
+      background: rgba(0, 0, 0, 0.2);
+    }
+    .history-title {
+      font-size: 1.5rem;
+      margin-bottom: 10px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body class="dark">
+  <div class="calculator-container">
+    <div class="calculator">
+      <div class="top-bar">
+        <div class="toggle-theme" onclick="toggleTheme()">🌙/☀️</div>
+        <div class="history-clear" onclick="clearHistory()">پاک کردن تاریخچه</div>
+      </div>
+      <div class="history" id="history-mini"></div>
+      <div class="display" id="display">0</div>
+      <div class="buttons">
+        <button class="operator" data-value="sin">sin</button>
+        <button class="operator" data-value="cos">cos</button>
+        <button class="operator" data-value="tan">tan</button>
+        <button class="operator" data-value="log">log</button>
+        <button class="operator" data-value="sqrt">√</button>
+
+        <button class="clear" data-value="C">C</button>
+        <button class="back" data-value="backspace">⌫</button>
+        <button class="operator" data-value="%">%</button>
+        <button class="operator" data-value="/">/</button>
+        <button class="operator" data-value="^">xʸ</button>
+
+        <button data-value="7">7</button>
+        <button data-value="8">8</button>
+        <button data-value="9">9</button>
+        <button class="operator" data-value="*">*</button>
+        <button class="operator" data-value="(">(</button>
+
+        <button data-value="4">4</button>
+        <button data-value="5">5</button>
+        <button data-value="6">6</button>
+        <button class="operator" data-value="-">-</button>
+        <button class="operator" data-value=")">)</button>
+
+        <button data-value="1">1</button>
+        <button data-value="2">2</button>
+        <button data-value="3">3</button>
+        <button class="operator" data-value="+">+</button>
+        <button class="operator" data-value="pi">π</button>
+
+        <button data-value="0">0</button>
+        <button data-value=".">.</button>
+        <button class="equal" data-value="=">=</button>
+        <button class="operator" data-value="e">e</button>
+      </div>
+    </div>
+  </div>
+
+  <audio
+    id="clickSound"
+    src="https://cdn.pixabay.com/audio/2022/03/15/audio_8b6c5e2c4c.mp3"
+  ></audio>
+
+  <script>
+    const display = document.getElementById("display");
+    const historyMini = document.getElementById("history-mini");
+    const buttons = document.querySelectorAll("button");
+    const clickSound = document.getElementById("clickSound");
+
+    let currentInput = "";
+    let history = JSON.parse(localStorage.getItem("calcHistory") || "[]");
+
+    function updateDisplay() {
+      display.textContent = currentInput || "0";
+      display.scrollLeft = display.scrollWidth;
+    }
+
+    function updateHistory() {
+      historyMini.innerHTML = "";
+      history
+        .slice(-5)
+        .reverse()
+        .forEach((entry) => {
+          const div = document.createElement("div");
+          div.className = "history-entry";
+          div.textContent = entry;
+          historyMini.appendChild(div);
+        });
+      localStorage.setItem("calcHistory", JSON.stringify(history));
+    }
+
+    function clearHistory() {
+      history = [];
+      updateHistory();
+    }
+
+    buttons.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        clickSound.currentTime = 0;
+        clickSound.play();
+        handleInput(btn.dataset.value);
+      });
+    });
+
+    function handleInput(value) {
+      if (value === "C") {
+        currentInput = "";
+      } else if (value === "backspace") {
+        currentInput = currentInput.slice(0, -1);
+      } else if (value === "=") {
+        try {
+          const expression = currentInput
+            .replace(/π/g, "pi")
+            .replace(/e/g, "e")
+            .replace(/xʸ/g, "^")
+            .replace(/√/g, "sqrt")
+            .replace(/%/g, "/100");
+
+          const result = math.evaluate(expression);
+
+          if (result === Infinity || result === -Infinity) {
+            currentInput = "خطا";
+          } else {
+            const formattedResult = result
+              .toPrecision(15)
+              .replace(/\.?0+$/, "");
+            history.push(`${currentInput} = ${formattedResult}`);
+            currentInput = formattedResult;
+            updateHistory();
+          }
+        } catch (error) {
+          currentInput = "خطا";
+        }
+      } else if (
+        ["sin", "cos", "tan", "log", "sqrt"].includes(value)
+      ) {
+        currentInput += value + "(";
+      } else if (value === "pi") {
+        currentInput += "π";
+      } else if (value === "e") {
+        currentInput += "e";
+      } else if (value === "^") {
+        currentInput += "^";
+      } else if (value === "%") {
+        currentInput += "%";
+      } else {
+        currentInput += value;
+      }
+      updateDisplay();
+    }
+
+    document.addEventListener("keydown", (e) => {
+      const key = e.key;
+      const validKeys = [
+        "0",
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "+",
+        "-",
+        "*",
+        "/",
+        ".",
+        "(",
+        ")",
+        "Enter",
+        "Backspace",
+      ];
+
+      if (validKeys.includes(key)) {
+        if (key === "Enter") {
+          handleInput("=");
+        } else if (key === "Backspace") {
+          handleInput("backspace");
+        } else {
+          currentInput += key;
+          clickSound.play();
+        }
+      } else if (key === "c") {
+        handleInput("C");
+      }
+      updateDisplay();
+    });
+
+    function toggleTheme() {
+      document.body.classList.toggle("dark");
+      document.body.classList.toggle("light");
+    }
+
+    updateHistory();
+    updateDisplay();
+  </script>
+</body>
+</html>
